@@ -95,17 +95,26 @@ export const importCSV = (file: File): Promise<WeightLog[]> => {
         }
         
         const logs: WeightLog[] = [];
+        const errors: string[] = [];
+        
         for (let i = 1; i < lines.length; i++) {
           const [date, weight] = lines[i].split(',');
           const weightNum = parseFloat(weight);
+          const trimmedDate = date?.trim();
           
-          if (date && !isNaN(weightNum) && weightNum > 0) {
-            logs.push({ date: date.trim(), weight: weightNum });
+          // Validate date format (YYYY-MM-DD)
+          const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+          const isValidDate = trimmedDate && dateRegex.test(trimmedDate) && !isNaN(new Date(trimmedDate).getTime());
+          
+          if (isValidDate && !isNaN(weightNum) && weightNum > 0) {
+            logs.push({ date: trimmedDate, weight: weightNum });
+          } else {
+            errors.push(`Row ${i + 1}: Invalid data (date: ${trimmedDate}, weight: ${weight})`);
           }
         }
         
         if (logs.length === 0) {
-          reject(new Error('No valid entries found in CSV'));
+          reject(new Error('No valid entries found in CSV. Expected format: YYYY-MM-DD,weight'));
           return;
         }
         

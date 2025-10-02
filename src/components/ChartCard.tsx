@@ -11,11 +11,20 @@ export const ChartCard = ({ logs }: ChartCardProps) => {
     new Date(a.date).getTime() - new Date(b.date).getTime()
   );
 
-  const chartData = sortedLogs.map(log => ({
-    date: format(parseISO(log.date), 'MMM dd'),
-    fullDate: log.date,
-    weight: log.weight,
-  }));
+  const chartData = sortedLogs
+    .filter(log => {
+      try {
+        const parsed = parseISO(log.date);
+        return !isNaN(parsed.getTime());
+      } catch {
+        return false;
+      }
+    })
+    .map(log => ({
+      date: format(parseISO(log.date), 'MMM dd'),
+      fullDate: log.date,
+      weight: log.weight,
+    }));
 
   if (chartData.length === 0) {
     return (

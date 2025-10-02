@@ -67,7 +67,15 @@ export const HistoryTable = ({ logs, onDelete, onEdit }: HistoryTableProps) => {
               </tr>
             </thead>
             <tbody>
-              {sortedLogs.map((log, index) => (
+            {sortedLogs.map((log, index) => {
+              let formattedDate = log.date;
+              try {
+                formattedDate = format(parseISO(log.date), 'yyyy-MM-dd');
+              } catch {
+                // If date parsing fails, use the raw date string
+              }
+              
+              return (
                 <tr 
                   key={log.date} 
                   className={`border-b border-border last:border-0 ${
@@ -75,7 +83,7 @@ export const HistoryTable = ({ logs, onDelete, onEdit }: HistoryTableProps) => {
                   }`}
                 >
                   <td className="py-3 px-2 sm:px-4 text-sm sm:text-base text-foreground font-medium">
-                    {format(parseISO(log.date), 'yyyy-MM-dd')}
+                    {formattedDate}
                   </td>
                   <td className="py-3 px-2 sm:px-4 text-sm sm:text-base text-foreground font-semibold">
                     {log.weight.toFixed(1)} kg
@@ -142,7 +150,8 @@ export const HistoryTable = ({ logs, onDelete, onEdit }: HistoryTableProps) => {
                     </div>
                   </td>
                 </tr>
-              ))}
+              );
+            })}
             </tbody>
           </table>
         </div>
