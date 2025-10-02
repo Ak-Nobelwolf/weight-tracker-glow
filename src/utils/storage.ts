@@ -81,6 +81,45 @@ export const exportCSV = (logs: WeightLog[]): void => {
   URL.revokeObjectURL(url);
 };
 
+const parseDate = (dateString: string): string | null => {
+  const trimmed = dateString.trim();
+  
+  // Try YYYY-MM-DD format first
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const date = new Date(trimmed);
+    if (!isNaN(date.getTime())) return trimmed;
+  }
+  
+  // Try DD-MM-YY or DD-MM-YYYY format
+  const ddmmRegex = /^(\d{2})-(\d{2})-(\d{2,4})$/;
+  const ddmmMatch = trimmed.match(ddmmRegex);
+  if (ddmmMatch) {
+    let [, day, month, year] = ddmmMatch;
+    // Convert 2-digit year to 4-digit (assuming 20xx for years 00-99)
+    if (year.length === 2) {
+      year = '20' + year;
+    }
+    const isoDate = `${year}-${month}-${day}`;
+    const date = new Date(isoDate);
+    if (!isNaN(date.getTime())) return isoDate;
+  }
+  
+  // Try DD/MM/YY or DD/MM/YYYY format
+  const ddmmSlashRegex = /^(\d{2})\/(\d{2})\/(\d{2,4})$/;
+  const ddmmSlashMatch = trimmed.match(ddmmSlashRegex);
+  if (ddmmSlashMatch) {
+    let [, day, month, year] = ddmmSlashMatch;
+    if (year.length === 2) {
+      year = '20' + year;
+    }
+    const isoDate = `${year}-${month}-${day}`;
+    const date = new Date(isoDate);
+    if (!isNaN(date.getTime())) return isoDate;
+  }
+  
+  return null;
+};
+
 export const importCSV = (file: File): Promise<WeightLog[]> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -99,22 +138,18 @@ export const importCSV = (file: File): Promise<WeightLog[]> => {
         
         for (let i = 1; i < lines.length; i++) {
           const [date, weight] = lines[i].split(',');
-          const weightNum = parseFloat(weight);
-          const trimmedDate = date?.trim();
+          const weightNum = parseFloat(weight?.trim());
+          const parsedDate = parseDate(date);
           
-          // Validate date format (YYYY-MM-DD)
-          const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-          const isValidDate = trimmedDate && dateRegex.test(trimmedDate) && !isNaN(new Date(trimmedDate).getTime());
-          
-          if (isValidDate && !isNaN(weightNum) && weightNum > 0) {
-            logs.push({ date: trimmedDate, weight: weightNum });
+          if (parsedDate && !isNaN(weightNum) && weightNum > 0) {
+            logs.push({ date: parsedDate, weight: weightNum });
           } else {
-            errors.push(`Row ${i + 1}: Invalid data (date: ${trimmedDate}, weight: ${weight})`);
+            errors.push(`Row ${i + 1}: Invalid data (date: ${date?.trim()}, weight: ${weight?.trim()})`);
           }
         }
         
         if (logs.length === 0) {
-          reject(new Error('No valid entries found in CSV. Expected format: YYYY-MM-DD,weight'));
+          reject(new Error('No valid entries found in CSV. Supported formats: YYYY-MM-DD, DD-MM-YY, DD/MM/YYYY'));
           return;
         }
         
