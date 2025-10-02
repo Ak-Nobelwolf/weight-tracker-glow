@@ -84,18 +84,29 @@ export const exportCSV = (logs: WeightLog[]): void => {
 const parseDate = (dateString: string): string | null => {
   const trimmed = dateString.trim();
   
-  // Try YYYY-MM-DD format first
+  // Format: YYYY-MM-DD (ISO format)
   if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
     const date = new Date(trimmed);
     if (!isNaN(date.getTime())) return trimmed;
   }
   
-  // Try DD-MM-YY or DD-MM-YYYY format
-  const ddmmRegex = /^(\d{2})-(\d{2})-(\d{2,4})$/;
-  const ddmmMatch = trimmed.match(ddmmRegex);
-  if (ddmmMatch) {
-    let [, day, month, year] = ddmmMatch;
-    // Convert 2-digit year to 4-digit (assuming 20xx for years 00-99)
+  // Format: YYYY/MM/DD
+  const yyyySlashRegex = /^(\d{4})\/(\d{2})\/(\d{2})$/;
+  const yyyySlashMatch = trimmed.match(yyyySlashRegex);
+  if (yyyySlashMatch) {
+    const [, year, month, day] = yyyySlashMatch;
+    const isoDate = `${year}-${month}-${day}`;
+    const date = new Date(isoDate);
+    if (!isNaN(date.getTime())) return isoDate;
+  }
+  
+  // Format: DD-MM-YY or DD-MM-YYYY
+  const ddmmDashRegex = /^(\d{1,2})-(\d{1,2})-(\d{2,4})$/;
+  const ddmmDashMatch = trimmed.match(ddmmDashRegex);
+  if (ddmmDashMatch) {
+    let [, day, month, year] = ddmmDashMatch;
+    day = day.padStart(2, '0');
+    month = month.padStart(2, '0');
     if (year.length === 2) {
       year = '20' + year;
     }
@@ -104,14 +115,76 @@ const parseDate = (dateString: string): string | null => {
     if (!isNaN(date.getTime())) return isoDate;
   }
   
-  // Try DD/MM/YY or DD/MM/YYYY format
-  const ddmmSlashRegex = /^(\d{2})\/(\d{2})\/(\d{2,4})$/;
+  // Format: DD/MM/YY or DD/MM/YYYY
+  const ddmmSlashRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/;
   const ddmmSlashMatch = trimmed.match(ddmmSlashRegex);
   if (ddmmSlashMatch) {
     let [, day, month, year] = ddmmSlashMatch;
+    day = day.padStart(2, '0');
+    month = month.padStart(2, '0');
     if (year.length === 2) {
       year = '20' + year;
     }
+    const isoDate = `${year}-${month}-${day}`;
+    const date = new Date(isoDate);
+    if (!isNaN(date.getTime())) return isoDate;
+  }
+  
+  // Format: DD.MM.YY or DD.MM.YYYY
+  const ddmmDotRegex = /^(\d{1,2})\.(\d{1,2})\.(\d{2,4})$/;
+  const ddmmDotMatch = trimmed.match(ddmmDotRegex);
+  if (ddmmDotMatch) {
+    let [, day, month, year] = ddmmDotMatch;
+    day = day.padStart(2, '0');
+    month = month.padStart(2, '0');
+    if (year.length === 2) {
+      year = '20' + year;
+    }
+    const isoDate = `${year}-${month}-${day}`;
+    const date = new Date(isoDate);
+    if (!isNaN(date.getTime())) return isoDate;
+  }
+  
+  // Format: MM/DD/YY or MM/DD/YYYY (US format)
+  const mmddSlashRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/;
+  const mmddSlashMatch = trimmed.match(mmddSlashRegex);
+  if (mmddSlashMatch) {
+    let [, month, day, year] = mmddSlashMatch;
+    month = month.padStart(2, '0');
+    day = day.padStart(2, '0');
+    if (year.length === 2) {
+      year = '20' + year;
+    }
+    // Try US format (MM/DD/YYYY)
+    const isoDate = `${year}-${month}-${day}`;
+    const date = new Date(isoDate);
+    if (!isNaN(date.getTime()) && parseInt(month) <= 12 && parseInt(day) <= 31) {
+      return isoDate;
+    }
+  }
+  
+  // Format: MM-DD-YY or MM-DD-YYYY (US format)
+  const mmddDashRegex = /^(\d{1,2})-(\d{1,2})-(\d{2,4})$/;
+  const mmddDashMatch = trimmed.match(mmddDashRegex);
+  if (mmddDashMatch) {
+    let [, month, day, year] = mmddDashMatch;
+    month = month.padStart(2, '0');
+    day = day.padStart(2, '0');
+    if (year.length === 2) {
+      year = '20' + year;
+    }
+    const isoDate = `${year}-${month}-${day}`;
+    const date = new Date(isoDate);
+    if (!isNaN(date.getTime()) && parseInt(month) <= 12 && parseInt(day) <= 31) {
+      return isoDate;
+    }
+  }
+  
+  // Format: YYYYMMDD (compact)
+  const compactRegex = /^(\d{4})(\d{2})(\d{2})$/;
+  const compactMatch = trimmed.match(compactRegex);
+  if (compactMatch) {
+    const [, year, month, day] = compactMatch;
     const isoDate = `${year}-${month}-${day}`;
     const date = new Date(isoDate);
     if (!isNaN(date.getTime())) return isoDate;
@@ -149,7 +222,7 @@ export const importCSV = (file: File): Promise<WeightLog[]> => {
         }
         
         if (logs.length === 0) {
-          reject(new Error('No valid entries found in CSV. Supported formats: YYYY-MM-DD, DD-MM-YY, DD/MM/YYYY'));
+          reject(new Error('No valid entries found in CSV. Supported formats: YYYY-MM-DD, DD/MM/YYYY, MM/DD/YYYY, DD.MM.YYYY, YYYYMMDD, and variations with 2 or 4 digit years'));
           return;
         }
         
