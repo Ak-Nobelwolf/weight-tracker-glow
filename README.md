@@ -45,68 +45,6 @@ A beautiful, modern weight tracking application built with React, TypeScript, an
 - Instant load times
 - Works offline
 
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 18+ or Bun
-- Modern web browser
-
-### Installation
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
-cd YOUR_REPO_NAME
-```
-
-2. **Install dependencies**
-```bash
-npm install
-# or
-bun install
-```
-
-3. **Start development server**
-```bash
-npm run dev
-# or
-bun run dev
-```
-
-4. **Open your browser**
-Navigate to `http://localhost:8080`
-
-## 🏗️ Building for Production
-
-```bash
-npm run build
-# or
-bun run build
-```
-
-The built files will be in the `dist` directory, ready for deployment.
-
-## 🌐 Deploying to GitHub Pages
-
-This project is configured for automatic deployment to GitHub Pages:
-
-1. **Enable GitHub Pages**
-   - Go to your repository on GitHub
-   - Navigate to Settings > Pages
-   - Under "Build and deployment", select "GitHub Actions" as the source
-
-2. **Push to main branch**
-   - The GitHub Actions workflow will automatically build and deploy
-   - Your site will be available at: `https://YOUR_USERNAME.github.io/YOUR_REPO_NAME/`
-
-3. **Update base path (if needed)**
-   - If deploying to a subdirectory, update `vite.config.ts`:
-   ```typescript
-   base: "/YOUR_REPO_NAME/",
-   ```
-
-The deployment workflow is defined in `.github/workflows/deploy.yml` and runs automatically on every push to the main branch.
-
 ## 📦 Tech Stack
 
 - **Frontend Framework**: React 18.3.1
@@ -229,6 +167,4 @@ If you have any questions or need help, please open an issue on GitHub.
 
 ## 🔗 Links
 
-- **Live Demo**: [View on Lovable](https://lovable.dev/projects/72751f73-3fec-4ee0-9bfe-2fd2e7e915e7)
-- **Documentation**: Check the docs folder for detailed guides
-- **Community**: Join our discussions in GitHub Issues
+- **Live Demo**: [View on Lovable](https://weight.nobelwolf.gleeze.com)
